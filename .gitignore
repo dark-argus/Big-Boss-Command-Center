@@ -1,0 +1,19 @@
+# Environment and secrets
+.env
+.env.*
+
+# Dependencies and caches
+node_modules/
+.cache/
+
+# Logs
+*.log
+
+# Editor and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local tool state
+.claude/

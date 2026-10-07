@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Big Boss Command Center: manage contestants, tasks, scores, nominations, immunity and evictions in the Tech House.">
+  <title>Big Boss Command Center</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23a78bfa' d='M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'/%3E%3C/svg%3E">
+  <meta name="color-scheme" content="dark light">
+  <script>
+    // Apply the saved theme before first paint; dark is the default.
+    try {
+      document.documentElement.dataset.theme =
+        localStorage.getItem('big-boss-command-center:theme') === 'light' ? 'light' : 'dark';
+    } catch {
+      document.documentElement.dataset.theme = 'dark';
+    }
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to dashboard</a>
+
+  <header class="site-header">
+    <div class="brand">
+      <svg class="brand-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 5C6.5 5 2.7 9.4 1.5 12c1.2 2.6 5 7 10.5 7s9.3-4.4 10.5-7C21.3 9.4 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+      <div>
+        <h1>Big Boss Command Center</h1>
+        <p class="subtitle">Tech House control room</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <button type="button" class="theme-toggle" id="theme-toggle" role="switch" aria-checked="true">
+        <span class="theme-track" aria-hidden="true"><span class="theme-thumb"></span></span>
+        <span>Dark mode</span>
+      </button>
+      <span class="live-pill" title="Every change updates this dashboard instantly in this browser">
+        <span class="live-dot" aria-hidden="true"></span>Live in this browser
+      </span>
+      <p class="header-captain">
+        <span class="header-captain-label">House Captain</span>
+        <strong id="header-captain">No captain assigned</strong>
+      </p>
+    </div>
+  </header>
+
+  <div id="storage-notice" class="storage-notice" role="alert" hidden>
+    <span id="storage-notice-text"></span>
+    <button type="button" class="btn btn-small" id="storage-notice-dismiss">Dismiss</button>
+  </div>
+
+  <main id="main" class="dashboard">
+    <section class="stats-section" aria-labelledby="stats-heading">
+      <h2 id="stats-heading" class="section-label">House Statistics</h2>
+      <dl id="stats" class="stats-grid"></dl>
+    </section>
+
+    <section class="panel announcement-panel" aria-labelledby="announcement-heading">
+      <h2 id="announcement-heading">Big Boss Announcement</h2>
+      <div id="announcement-display" class="announcement-display"></div>
+      <form id="announcement-form" class="announcement-form" novalidate>
+        <div class="field">
+          <label for="announcement-input">Announcement message</label>
+          <textarea id="announcement-input" name="message" rows="2" maxlength="500"
+            placeholder="e.g. All contestants report to the living area."
+            aria-describedby="announcement-input-error"></textarea>
+          <p id="announcement-input-error" class="field-error" hidden></p>
+        </div>
+        <button type="submit" class="btn btn-primary">Broadcast</button>
+      </form>
+    </section>
+
+    <div class="layout">
+      <div class="main-column">
+        <section class="panel" aria-labelledby="contestants-heading">
+          <div class="panel-head">
+            <h2 id="contestants-heading" tabindex="-1">Contestants</h2>
+            <span id="active-count-label" class="muted"></span>
+          </div>
+          <form id="contestant-form" class="form-row" novalidate>
+            <div class="field">
+              <label for="contestant-name">Name</label>
+              <input id="contestant-name" name="name" type="text" maxlength="50" autocomplete="off"
+                placeholder="e.g. Neha" aria-describedby="contestant-name-error">
+              <p id="contestant-name-error" class="field-error" hidden></p>
+            </div>
+            <div class="field">
+              <label for="contestant-team">Team</label>
+              <input id="contestant-team" name="team" type="text" maxlength="40" autocomplete="off"
+                list="team-options" placeholder="e.g. Phoenix" aria-describedby="contestant-team-error">
+              <p id="contestant-team-error" class="field-error" hidden></p>
+            </div>
+            <datalist id="team-options"></datalist>
+            <button type="submit" class="btn btn-primary">Add Contestant</button>
+          </form>
+          <p class="hint">New contestants join with 0 points.</p>
+          <div id="contestant-list" class="contestant-grid"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="tasks-heading">
+          <div class="panel-head">
+            <h2 id="tasks-heading">Task Management</h2>
+            <span id="task-count-label" class="muted"></span>
+          </div>
+          <form id="task-form" class="form-row" novalidate>
+            <div class="field field-wide">
+              <label for="task-title">Task title</label>
+              <input id="task-title" name="title" type="text" maxlength="100" autocomplete="off"
+                placeholder="e.g. Cook dinner for the house" aria-describedby="task-title-error">
+              <p id="task-title-error" class="field-error" hidden></p>
+            </div>
+            <div class="field">
+              <label for="task-assignee">Assign to</label>
+              <select id="task-assignee" name="assignee" aria-describedby="task-assignee-error"></select>
+              <p id="task-assignee-error" class="field-error" hidden></p>
+            </div>
+            <div class="field field-narrow">
+              <label for="task-reward">Reward points</label>
+              <input id="task-reward" name="reward" type="text" inputmode="numeric" value="50"
+                aria-describedby="task-reward-error">
+              <p id="task-reward-error" class="field-error" hidden></p>
+            </div>
+            <button type="submit" class="btn btn-primary" id="task-submit">Assign Task</button>
+          </form>
+          <p id="task-form-note" class="hint hint-warning" hidden>Add an active contestant before assigning tasks.</p>
+          <ul id="task-list" class="task-list"></ul>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="House monitors">
+        <section class="panel" aria-labelledby="leaderboard-heading">
+          <h2 id="leaderboard-heading">Live Leaderboard</h2>
+          <div id="leaderboard" class="leaderboard"></div>
+        </section>
+
+        <section class="panel danger-panel" aria-labelledby="danger-heading">
+          <h2 id="danger-heading">Danger Zone</h2>
+          <ul id="danger-zone" class="danger-list"></ul>
+        </section>
+
+        <section class="panel timer-panel" id="timer-panel" aria-labelledby="timer-heading">
+          <h2 id="timer-heading">Task Timer</h2>
+          <p class="timer-display" id="timer-display">05:00</p>
+          <p class="timer-state" id="timer-state">Ready</p>
+          <form id="timer-form" novalidate>
+            <fieldset class="timer-fields">
+              <legend>Countdown duration</legend>
+              <div class="field">
+                <label for="timer-minutes">Minutes</label>
+                <input id="timer-minutes" name="minutes" type="text" inputmode="numeric" value="5"
+                  aria-describedby="timer-minutes-error timer-lock-note">
+              </div>
+              <div class="field">
+                <label for="timer-seconds">Seconds</label>
+                <input id="timer-seconds" name="seconds" type="text" inputmode="numeric" value="0"
+                  aria-describedby="timer-seconds-error timer-lock-note">
+              </div>
+            </fieldset>
+            <p id="timer-minutes-error" class="field-error" hidden></p>
+            <p id="timer-seconds-error" class="field-error" hidden></p>
+            <p id="timer-lock-note" class="hint" hidden>Reset the timer to change its duration.</p>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary" id="timer-start">Start</button>
+              <button type="button" class="btn" id="timer-pause">Pause</button>
+              <button type="button" class="btn" id="timer-reset">Reset</button>
+            </div>
+          </form>
+        </section>
+      </aside>
+    </div>
+
+    <section class="panel" aria-labelledby="evicted-heading">
+      <h2 id="evicted-heading">Evicted Contestants</h2>
+      <div id="evicted-list"></div>
+    </section>
+  </main>
+
+  <p id="action-status" class="toast" role="status" aria-live="polite"></p>
+
+  <dialog id="evict-dialog" class="dialog" aria-labelledby="evict-title" aria-describedby="evict-description">
+    <form method="dialog">
+      <h2 id="evict-title">Confirm eviction</h2>
+      <p id="evict-description"></p>
+      <div class="btn-row dialog-actions">
+        <button type="submit" value="cancel" class="btn" id="evict-cancel" autofocus>Cancel</button>
+        <button type="submit" value="confirm" class="btn btn-danger" id="evict-confirm">Evict</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
