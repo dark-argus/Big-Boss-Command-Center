@@ -2,11 +2,9 @@
 
 The Tech House is in chaos. This single-page dashboard lets Big Boss manage contestants, scores, tasks, captaincy, nominations, immunity, announcements, a countdown timer and evictions from one place. Every change updates the whole dashboard immediately.
 
-![Dashboard in dark mode](assets/dashboard-dark.jpg)
 
 The dashboard uses a neo-brutalist style. Dark mode is the default; the **Dark mode** switch in the header changes to light mode and remembers the choice.
 
-![Dashboard in light mode](assets/dashboard-light.jpg)
 
 ## Technology
 
